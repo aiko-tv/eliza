@@ -212,6 +212,7 @@ export class TokenProvider {
             };
 
             for (const token of tokens) {
+                console.log(`Fetching price for token: ${token}, url: ${PROVIDER_CONFIG.BIRDEYE_API}/defi/price?address=${token}`);
                 const response = await this.fetchWithRetry(
                     `${PROVIDER_CONFIG.BIRDEYE_API}/defi/price?address=${token}`,
                     {

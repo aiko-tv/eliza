@@ -120,7 +120,7 @@ export class SpeechService extends Service implements ISpeechService {
         }
         const { audio } = await synthesize(text, {
             engine: "vits",
-            voice: "en_US-hfc_female-medium",
+            voice: "aEO01A4wXwd1O8GPgGlF",
         });
 
         let wavStream: Readable;

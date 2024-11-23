@@ -66,6 +66,9 @@ export class WalletProvider {
     ): Promise<any> {
         let lastError: Error;
 
+        // log Birdeye API key
+        console.log("Birdeye API key:", runtime.getSetting("BIRDEYE_API_KEY"));
+
         for (let i = 0; i < PROVIDER_CONFIG.MAX_RETRIES; i++) {
             try {
                 const response = await fetch(url, {

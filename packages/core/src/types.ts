@@ -114,6 +114,8 @@ export type Models = {
     [ModelProviderName.REDPILL]: Model;
     [ModelProviderName.OPENROUTER]: Model;
     [ModelProviderName.OLLAMA]: Model;
+    // [ModelProviderName.OASIS]: Model;
+
 };
 
 export enum ModelProviderName {
@@ -128,6 +130,7 @@ export enum ModelProviderName {
     REDPILL = "redpill",
     OPENROUTER = "openrouter",
     OLLAMA = "ollama",
+    // OASIS = "oasis",
 }
 
 /**
@@ -322,6 +325,7 @@ export enum Clients {
     DIRECT = "direct",
     TWITTER = "twitter",
     TELEGRAM = "telegram",
+    AIKO = "aiko",
 }
 
 export type Character = {
@@ -351,6 +355,8 @@ export type Character = {
         };
         model?: string;
         embeddingModel?: string;
+        vrm?: string;
+        avatar?: string;
     };
     style: {
         all: string[];

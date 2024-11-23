@@ -1,7 +1,7 @@
 {
     "name": "tate",
-    "clients": [],
-    "modelProvider": "anthropic",
+    "clients": ["aiko"],
+    "modelProvider": "openai",
     "settings": {
       "secrets": {},
       "voice": {

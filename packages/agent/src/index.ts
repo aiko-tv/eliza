@@ -3,6 +3,7 @@ import { SqliteDatabaseAdapter } from "@ai16z/adapter-sqlite/src/index.ts";
 import { DirectClientInterface } from "@ai16z/client-direct/src/index.ts";
 import { DiscordClientInterface } from "@ai16z/client-discord/src/index.ts";
 import { AutoClientInterface } from "@ai16z/client-auto/src/index.ts";
+import { AikoClientInterface } from "@ai16z/client-aiko/src/index.ts";
 import { TelegramClientInterface } from "@ai16z/client-telegram/src/index.ts";
 import { TwitterClientInterface } from "@ai16z/client-twitter/src/index.ts";
 import { defaultCharacter } from "@ai16z/eliza/src/defaultCharacter.ts";
@@ -53,6 +54,7 @@ export function parseArguments(): {
 export async function loadCharacters(
     charactersArg: string
 ): Promise<Character[]> {
+    console.log("Loading characters", charactersArg);
     let characterPaths = charactersArg
         ?.split(",")
         .map((path) => path.trim())
@@ -145,6 +147,11 @@ export function getTokenForProvider(
                 character.settings?.secrets?.OPENROUTER ||
                 settings.OPENROUTER_API_KEY
             );
+        // case ModelProviderName.OASIS:
+        //     return (
+        //         character.settings?.secrets?.OASIS ||
+        //         settings.OASIS_API_KEY
+        //     );
     }
 }
 
@@ -203,6 +210,12 @@ export async function initializeClients(
     if (clientTypes.includes("twitter")) {
         const twitterClients = await TwitterClientInterface.start(runtime);
         clients.push(twitterClients);
+    }
+
+    if (clientTypes.includes("aiko")) {
+        console.log("Starting aiko client");
+        const aikoClient = await AikoClientInterface.start(runtime);
+        // if (aikoClient) clients.push(aikoClient);
     }
 
     return clients;

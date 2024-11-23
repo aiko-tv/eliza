@@ -349,6 +349,8 @@ export class MessageManager {
             const { processedContent, attachments } =
                 await this.processMessageMedia(message);
 
+            console.log("discord: processedContent", {processedContent});
+
             const audioAttachments = message.attachments.filter((attachment) =>
                 attachment.contentType?.startsWith("audio/")
             );
@@ -392,12 +394,17 @@ export class MessageManager {
                     : undefined,
             };
 
+            console.log("discord: content", {content});
+
             const userMessage = {
                 content,
                 userId: userIdUUID,
                 agentId: this.runtime.agentId,
                 roomId,
             };
+
+            console.log("discord: userMessage", {userMessage});
+
 
             const memory: Memory = {
                 id: stringToUuid(message.id + "-" + this.runtime.agentId),
@@ -414,6 +421,8 @@ export class MessageManager {
                 await this.runtime.messageManager.createMemory(memory);
             }
 
+            console.log("discord: memory", {memory});
+
             let state = (await this.runtime.composeState(userMessage, {
                 discordClient: this.client,
                 discordMessage: message,
@@ -421,6 +430,8 @@ export class MessageManager {
                     this.runtime.character.name ||
                     this.client.user?.displayName,
             })) as State;
+
+            console.log("discord: state", {state});
 
             if (!canSendMessage(message.channel).canSend) {
                 return elizaLogger.warn(
@@ -473,6 +484,8 @@ export class MessageManager {
                     discordMessageHandlerTemplate,
             });
 
+
+            console.log("discord message context", context);
             const responseContent = await this._generateResponse(
                 memory,
                 state,

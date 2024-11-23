@@ -20,7 +20,7 @@ const factsProvider: Provider = {
 
         const embedding = await embed(runtime, recentMessages);
 
-        console.log('embedding', embedding);
+        // console.log('embedding', embedding);
         console.log('embedding length', embedding.length);
 
 

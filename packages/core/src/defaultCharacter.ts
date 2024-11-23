@@ -1,13 +1,12 @@
-import { Character, ModelProviderName } from "./types.ts";
+import { Character, Clients, ModelProviderName } from "./types.ts";
 
 export const defaultCharacter: Character = {
     name: "Eliza",
     plugins: [],
-    clients: [],
+   clients: [Clients.AIKO],
     modelProvider: ModelProviderName.OPENAI,
     settings: {
-        secrets: {
-        },
+        secrets: {},
         voice: {
             model: "en_US-hfc_female-medium",
         },

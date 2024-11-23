@@ -637,6 +637,8 @@ export async function generateMessageResponse({
                 context,
                 modelClass,
             });
+
+            console.log("generateMessageResponse response", { response });
             // try parsing the response as JSON, if null then try again
             const parsedContent = parseJSONObjectFromText(response) as Content;
             if (!parsedContent) {

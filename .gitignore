@@ -7,6 +7,11 @@ embedding-cache.json
 
 .DS_Store
 
+
+# Ignore character files except specific ones
+characters/*
+
+
 dist/
 # Allow models directory but ignore model files
 models/*.gguf
@@ -33,7 +38,6 @@ twitter_cookies.json
 timeline_cache.json
 
 *.sqlite
-characters/
 
 packages/core/src/providers/cache
 packages/core/src/providers/cache/*

@@ -217,6 +217,22 @@ const models: Models = {
                 settings.OLLAMA_EMBEDDING_MODEL || "mxbai-embed-large",
         },
     },
+    // [ModelProviderName.OASIS]: {
+    //     settings: {
+    //         stop: [],
+    //         maxInputTokens: 128000,
+    //         maxOutputTokens: 8192,
+    //         frequency_penalty: 0.0,
+    //         presence_penalty: 0.0,
+    //         temperature: 0.3,
+    //     },
+    //     endpoint: "https://api.oasis.ai/v1",
+    //     model: {
+    //         [ModelClass.SMALL]: "fe8bfc5d-c22f-4e6e-9940-e5a25dcf0f1e",
+    //         [ModelClass.MEDIUM]: "fe8bfc5d-c22f-4e6e-9940-e5a25dcf0f1e",
+    //         [ModelClass.LARGE]: "fe8bfc5d-c22f-4e6e-9940-e5a25dcf0f1e",
+    //     },
+    // },
 };
 
 export function getModel(provider: ModelProviderName, type: ModelClass) {
