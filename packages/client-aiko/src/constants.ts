@@ -58,7 +58,8 @@ export const ANIMATION_OPTIONS = {
         "happy_hand_gesture",
         "look_away_gesture",
         "relieved_sigh",
-        "standing_clap"
+        "standing_clap",
+        "blow_a_kiss"
     ],
 
     // Dancing
@@ -67,7 +68,9 @@ export const ANIMATION_OPTIONS = {
         "hip_hop_dancing",
         "rumba_dancing",
         "silly_dancing",
-        "capoeira"
+        "capoeira",
+        "belly_dance",
+        "maraschino"
     ],
 
     // Sitting poses
@@ -86,6 +89,8 @@ export const ANIMATION_OPTIONS = {
         "laughing",
         "super_excited",
         "walk_with_rifle",
-        "weight_shift"
+        "weight_shift",
+        "blow_a_kiss"
+
     ]
 };

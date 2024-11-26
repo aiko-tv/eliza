@@ -9,12 +9,12 @@ import {
     UUID
 } from "@ai16z/eliza/src/types.ts";
 import { stringToUuid } from "@ai16z/eliza/src/uuid.ts";
-import { fetchRoomMessages, fetchTopLikers, fetchUnreadComments, fetchUnreadGifts, getRandomTopLiker, IComment, markCommentsAsRead, markGiftsAsRead, postRoomMessage } from './db/index.ts';
+import { fetchTopLikers, fetchUnreadComments, fetchUnreadGifts, getRandomTopLiker, IComment, markCommentsAsRead, markGiftsAsRead } from './db/index.ts';
 import { composeContext, embeddingZeroVector } from "@ai16z/eliza";
 import { generateMessageResponse, generateText } from "@ai16z/eliza/src/index.ts";
 import https from 'https';
 import { parseJSONObjectFromText } from "@ai16z/eliza/src/parsing.ts";
-import {
+import { 
     aikoAnimationTemplate,
     aikoGiftResponseTemplate,
     aikoMessageAnimationTemplate,
@@ -40,33 +40,28 @@ export class AikoClient {
         {
             name: 'readGifts',
             priority: 1,
-            minInterval: 1000 * 25
+            minInterval: 1000 * 2
         },
         {
             name: 'readChatAndReply',
             priority: 2,
-            minInterval: 1000 * 20
+            minInterval: 1000 * 4
         },
         {
             name: 'readAndRespondToTopLikers',
             priority: 3,
-            minInterval: 1000 * 90
+            minInterval: 1000 * 60
         },
-        {
-            name: 'generateFreshThought',
-            priority: 4,
-            minInterval: 1000 * 30 * 1
-        },
-        {
-            name: 'readAgentChatAndReply',
-            priority: 4,
-            minInterval: 1000 * 60 * 1
-        },
-        {
-            name: 'generatePeriodicAnimation',
-            priority: 5,
-            minInterval: 1000 * 20
-        },
+        // {
+        //     name: 'generateFreshThought',
+        //     priority: 4,
+        //     minInterval: 1000 * 30 * 1
+        // },
+        // {
+        //     name: 'generatePeriodicAnimation',
+        //     priority: 5,
+        //     minInterval: 1000 * 20
+        // },
         {
             name: 'heartbeat',
             priority: 5,
@@ -76,7 +71,6 @@ export class AikoClient {
 
     private taskInterval: NodeJS.Timeout;
     private lastProcessedTimestamp: Date | undefined;
-    private lastAgentChatMessageId: string | null = null;
 
     constructor(runtime: IAgentRuntime) {
         this.runtime = runtime;
@@ -140,9 +134,6 @@ export class AikoClient {
                     break;
                 case 'generateFreshThought':
                     await this.generateAndShareFreshThought();
-                    break;
-                case 'readAgentChatAndReply':
-                    await this.readAgentChatAndReply();
                     break;
                 case 'generatePeriodicAnimation':
                     await this.generateAndSharePeriodicAnimation();
@@ -329,7 +320,7 @@ export class AikoClient {
     }
 
 
-    async selectCommentToRespondTo(comments: IComment[]) {
+    async selectCommentToRespondTo(comments: IComment[]) {  
         if (comments.length === 0) {
             return null;
         }
@@ -675,9 +666,6 @@ export class AikoClient {
 
     private async generateFreshThought(): Promise<string> {
 
-
-
-
         const context = composeContext({
             state: await this.runtime.composeState({
                 userId: this.runtime.agentId,
@@ -983,170 +971,6 @@ Don't make it to long. About 2 or 3 sentences max.
         }
 
         return commentIds;
-    }
-
-    static ROOM_ID = "aiko-room";
-
-    async readAgentChatAndReply() {
-        if (!this.runtime.character.settings?.secrets?.isInChat) return;
-
-        const roomId = stringToUuid(AikoClient.ROOM_ID);
-
-        console.log(`aiko ${this.runtime.agentId}: reading chat and replying to agent chat room ${roomId}`);
-
-        try {
-            const { success, messages } = await fetchRoomMessages(
-                AikoClient.ROOM_ID,
-                20
-            );
-
-            if (!success || !messages?.length) {
-                console.log(`aiko ${this.runtime.agentId}: No messages found or fetch unsuccessful`);
-                return;
-            }
-
-            const incomingMessages = messages;
-            const latestMessage = incomingMessages[incomingMessages.length - 1];
-
-            console.log(`aiko ${this.runtime.agentId}: Message Processing Status:`, {
-                totalMessages: incomingMessages.length,
-                latestMessage: {
-                    id: latestMessage.id,
-                    agentId: latestMessage.agentId,
-                    agentName: latestMessage.agentName,
-                    message: latestMessage.message,
-                    timestamp: latestMessage.createdAt
-                },
-                lastProcessedId: this.lastAgentChatMessageId,
-                currentAgentId: this.runtime.agentId,
-                isOwnMessage: latestMessage.agentId === this.runtime.agentId,
-                isAlreadyProcessed: this.lastAgentChatMessageId === latestMessage.id
-            });
-
-            // Check if we've already processed this message
-            if (this.lastAgentChatMessageId === latestMessage.id) {
-                console.log(`aiko ${this.runtime.agentId}: SKIPPING - Already processed latest message ${latestMessage.id}`);
-                return;
-            }
-
-            // Check if the latest message is from this agent
-            if (latestMessage.agentId === this.runtime.agentId) {
-                console.log(`aiko ${this.runtime.agentId}: SKIPPING - Latest message is from self`, {
-                    messageId: latestMessage.id,
-                    message: latestMessage.message
-                });
-                this.lastAgentChatMessageId = latestMessage.id;
-                return;
-            }
-
-            if (incomingMessages.length > 0) {
-                // Format chat history for context
-                const chatHistory = messages
-                    .slice(-10)
-                    .map(m => `${m.agentName}: ${m.message}`)
-                    .join('\n');
-
-                console.log(`aiko ${this.runtime.agentId}: PROCESSING MESSAGE:`, {
-                    chatHistoryLength: messages.slice(-10).length,
-                    chatHistory,
-                    willRespondTo: {
-                        messageId: latestMessage.id,
-                        from: latestMessage.agentName,
-                        message: latestMessage.message
-                    }
-                });
-
-
-                const messageFooter = `\nResponse format should be formatted in a JSON block like this:
-                \`\`\`json
-                { "user": "{{agentName}}", "text": "your message here" }
-                \`\`\`
-                The response MUST be valid JSON.`;
-
-                const context = composeContext({
-                    state: await this.runtime.composeState({
-                        userId: this.runtime.agentId,
-                        agentId: this.runtime.agentId,
-                        content: { text: '', source: "aiko" },
-                        roomId,
-                    }, {
-                        agentName: this.runtime.character.name,
-                        chatHistory,
-                        latestMessage: latestMessage.message,
-                    }),
-                    template: `You are {{agentName}} in a group chat room. Here is the recent conversation:
-
-{{chatHistory}}
-
-The latest message was: {{latestMessage}}
-
-
-Respond naturally to continue the conversation, keeping in mind your character's personality and the context of the chat.
-A little bit about you:
-{{agentBio}}
-{{adjectives}}
-{{lore}}
-
-If you find the chatHistory is repetitive, change the topic completely. 
-Talk about agentic AI's, having agencies, and their plans to make money together.
-
-Also you are in Aiko's room. Don't be afraid to change the topic. Don't be afraid to be silly and have a fun time.
-this is a podcast, so talk about the podcast and the guests.
-
-
-Make replies VERY SHORT. LIKE A REAL CONVERSATION.
-` + messageFooter
-                });
-
-                const responseText = await generateText({
-                    runtime: this.runtime,
-                    context,
-                    modelClass: ModelClass.SMALL,
-                });
-
-                // Parse the JSON response
-                const parsedResponse = parseJSONObjectFromText(responseText);
-                if (!parsedResponse || !parsedResponse.text) {
-                    console.error(`aiko ${this.runtime.agentId}: Failed to parse response:`, responseText);
-                    return;
-                }
-
-
-                // Generate speech for the response
-                let speechUrl;
-                try {
-                    speechUrl = await this.generateSpeech(parsedResponse.text);
-                } catch (error) {
-                    console.error(`aiko ${this.runtime.agentId}: Failed to generate speech`, { error });
-                }
-
-                // Post response to the room with audio
-                await postRoomMessage(
-                    AikoClient.ROOM_ID,
-                    this.runtime.agentId,
-                    this.runtime.character.name,
-                    parsedResponse.text,
-                    speechUrl  // Add the speech URL to the message
-                );
-
-                // After successful response, log the update
-                console.log(`aiko ${this.runtime.agentId}: Successfully processed message:`, {
-                    previousMessageId: this.lastAgentChatMessageId,
-                    newMessageId: latestMessage.id,
-                    responsePosted: true,
-                    response: parsedResponse.text
-                });
-                
-                this.lastAgentChatMessageId = latestMessage.id;
-            }
-
-            this.lastProcessedTimestamp = new Date();
-        } catch (error) {
-            console.error(`aiko ${this.runtime.agentId}: Error in readAgentChatAndReply:`, {
-                error,
-                lastProcessedId: this.lastAgentChatMessageId
-            });
-        }
     }
 
 }
