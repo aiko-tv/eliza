@@ -642,8 +642,13 @@ export class AikoClient {
             if (!thoughtText) return;
 
             // Generate speech
-            const speechUrl = await this.generateSpeech(thoughtText);
-            if (!speechUrl) return;
+            let speechUrl;
+            try {
+                speechUrl = await this.generateSpeech(thoughtText);
+            } catch (error) {
+                console.error("Error generating speech:", error);
+                speechUrl = undefined;
+            }
 
             // Prepare the response body
             const body: AIResponse = {
