@@ -398,7 +398,6 @@ export class AikoClient {
     }
 
     async updateStreamingStatus(update: Partial<StreamingStatusUpdate>) {
-        const sceneConfigs = this.runtime.character.settings?.secrets?.aikoSceneConfigs
         const streamSettings = this.runtime.character.settings?.secrets?.aikoSettings
 
         try {
@@ -407,8 +406,8 @@ export class AikoClient {
                 // Default values
                 isStreaming: true,
                 lastHeartbeat: new Date(),
-                title: `${this.runtime.character.name}'s Stream`,
-                description: "Interactive AI Stream",
+                title: `${this.runtime.character.name}'s TEST Stream`,
+                description: "Interactive AI TEST Stream",
                 type: 'stream',
                 component: 'ThreeScene',
                 twitter: this.runtime.character.settings?.secrets?.twitterUsername || this.runtime.getSetting("TWITTER_USERNAME"),
@@ -421,11 +420,28 @@ export class AikoClient {
                 // Always include agentId
                 agentId: this.runtime.agentId,
 
+                // Stream Id
+
                 // Default creator info if not provided
                 creator: streamSettings || update.creator,
 
                 // Default scene configs if not provided
-                sceneConfigs: sceneConfigs || [],
+                walletAddress: this.runtime.getSetting("WALLET_PUBLIC_KEY") || update.walletAddress,
+                sceneConfigs: [
+                    {
+                        model: this.runtime.character.settings?.secrets?.aikoModel,
+                        environmentURL: this.runtime.character.settings?.secrets?.aikoEnvironmentUrl,
+                        
+                        models: [
+                            {
+                                model: this.runtime.character.settings?.secrets?.aikoModel,
+                                agentId: this.runtime.agentId,
+                                // add other default values here
+                            }
+                        ]
+                    }
+                ],
+                
                 // Default stats if not provided
                 stats: update.stats || {
                     likes: 0,
@@ -434,17 +450,17 @@ export class AikoClient {
                     shares: 0
                 }
             };
-
+            console.log("aiko: updateStreamingStatus: statusUpdate", { statusUpdate });
             const response = await fetch(`${SERVER_URL}/api/scenes/${this.runtime.agentId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
-                    'api_key': api_key
                 },
                 body: JSON.stringify(statusUpdate)
             });
 
             if (!response.ok) {
+                console.error("aiko: updateStreamingStatus: response", { response });
                 throw new Error(`Failed to update streaming status: ${response.statusText}`);
             }
 
