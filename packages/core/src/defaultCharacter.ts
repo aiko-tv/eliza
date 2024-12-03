@@ -6,7 +6,10 @@ export const defaultCharacter: Character = {
    clients: [Clients.AIKO],
     modelProvider: ModelProviderName.OPENAI,
     settings: {
-        secrets: {},
+        secrets: {
+            aikoModel: "aiko2.vrm", // change this to the model you want to use
+            aikoEnvironmentUrl: "modern_bedroom_compressed.glb",
+        },
         voice: {
             model: "en_US-hfc_female-medium",
         },

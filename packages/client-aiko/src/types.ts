@@ -42,6 +42,8 @@ export interface StreamingStatusUpdate {
     title?: string;
     description?: string;
     model?: string;
+    walletAddress?: string;
+    sceneConfigs?: SceneConfig[];
     modelName?: string;
     twitter?: string;
     color?: string;
@@ -53,6 +55,35 @@ export interface StreamingStatusUpdate {
         avatar: string;
     };
     stats?: StreamingStats;
+}
+
+export interface SceneConfig {
+    id?: number;
+    name?: string;
+    description?: string;
+    model: string;
+    environmentURL?: string; // required
+    defaultAnimation?: string;
+    models?: ModelSchema[]; // Assuming ModelSchema is defined elsewhere
+    clothes?: string;
+    environmentScale?: number[];
+    environmentPosition?: number[];
+    environmentRotation?: number[];
+    cameraPitch?: number;
+    cameraPosition?: number[];
+    cameraRotation?: number;
+}
+
+interface ModelSchema {
+    model: string;
+    name?: string; // Optional, as it has a default value
+    description?: string; // Optional, as it has a default value
+    agentId: string; // required
+    clothes?: string; // Optional, as it has a default value
+    defaultAnimation?: string; // Optional, as it has a default value
+    modelPosition?: number[]; // Optional, as it has a default value
+    modelRotation?: number[]; // Optional, as it has a default value
+    modelScale?: number[]; // Optional, as it has a default value
 }
 
 export interface TaskPriority {
