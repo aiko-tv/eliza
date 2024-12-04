@@ -3,12 +3,15 @@ import { Character, Clients, ModelProviderName } from "./types.ts";
 export const defaultCharacter: Character = {
     name: "Eliza",
     plugins: [],
-   clients: [Clients.AIKO],
+    clients: [Clients.AIKO],
     modelProvider: ModelProviderName.OPENAI,
     settings: {
         secrets: {
             aikoModel: "aiko2.vrm", // change this to the model you want to use
             aikoEnvironmentUrl: "modern_bedroom_compressed.glb",
+            aikoUsername: "TestUserStream",
+            aikoCreatorTitle: "Test Creator Title",
+            aikoAvatar: "https://aiko-tv.b-cdn.net/images/aiko.webp",
         },
         voice: {
             model: "en_US-hfc_female-medium",

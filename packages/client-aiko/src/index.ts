@@ -423,18 +423,22 @@ export class AikoClient {
                 // Stream Id
 
                 // Default creator info if not provided
-                creator: streamSettings || update.creator,
+                creator: {
+                    username: this.runtime.character.settings?.secrets?.aikoUsername,
+                    title: this.runtime.character.settings?.secrets?.aikoCreatorTitle,
+                    avatar: this.runtime.character.settings?.secrets?.aikoAvatar, // must be image url
+                } || update.creator,
 
                 // Default scene configs if not provided
                 walletAddress: this.runtime.getSetting("WALLET_PUBLIC_KEY") || update.walletAddress,
                 sceneConfigs: [
                     {
-                        model: this.runtime.character.settings?.secrets?.aikoModel,
-                        environmentURL: this.runtime.character.settings?.secrets?.aikoEnvironmentUrl,
+                        model: this.runtime.character.settings?.secrets?.aikoModel || update.model,
+                        environmentURL: this.runtime.character.settings?.secrets?.aikoEnvironmentUrl || update.sceneConfigs[0].environmentURL,
                         
                         models: [
                             {
-                                model: this.runtime.character.settings?.secrets?.aikoModel,
+                                model: this.runtime.character.settings?.secrets?.aikoModel  || update.sceneConfigs[0].model,
                                 agentId: this.runtime.agentId,
                                 // add other default values here
                             }
