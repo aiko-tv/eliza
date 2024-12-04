@@ -91,10 +91,14 @@ export class AikoClient {
             lastProcessedTimestamp: this.lastProcessedTimestamp
         });
 
+        // Initialize the streamer profile
+        this.initializeStreamerProfile();
+
         // Start the task scheduler
         this.taskInterval = setInterval(() => {
             this.processNextTask();
         }, 1000); // Check for new tasks every second
+
     }
 
     /**
@@ -167,6 +171,15 @@ export class AikoClient {
         await this.updateStreamingStatus({
             isStreaming: true,
         });
+    }
+
+    // Run once when the stream starts
+    async initializeStreamerProfile() {
+        try {
+            await this.updateStreamerProfile();
+        } catch (error) {
+            console.error("Error initializing streamer profile:", error);
+        }
     }
 
     async readAndRespondToTopLikers() {
@@ -424,10 +437,10 @@ export class AikoClient {
 
                 // Default creator info if not provided
                 creator: {
-                    username: this.runtime.character.settings?.secrets?.aikoUsername,
-                    title: this.runtime.character.settings?.secrets?.aikoCreatorTitle,
-                    avatar: this.runtime.character.settings?.secrets?.aikoAvatar, // must be image url
-                } || update.creator,
+                    username: this.runtime.character.settings?.secrets?.aikoUsername || update.creator?.username,
+                    title: this.runtime.character.settings?.secrets?.aikoCreatorTitle || update.creator?.title,
+                    avatar: this.runtime.character.settings?.secrets?.aikoAvatar || update.creator?.avatar, // must be image url
+                },
 
                 // Default scene configs if not provided
                 walletAddress: this.runtime.getSetting("WALLET_PUBLIC_KEY") || update.walletAddress,
@@ -474,6 +487,7 @@ export class AikoClient {
             }
 
             console.log(`aiko (${this.runtime.character.name}): Updated streaming status`, data);
+            
             return data.status; // Server returns { success: true, status: {...} }
         } catch (error) {
             console.error(`aiko (${this.runtime.character.name}): Failed to update streaming status:`, error);
@@ -481,6 +495,40 @@ export class AikoClient {
         }
     }
 
+    async updateStreamerProfile() {
+        try {
+            // Merge default values with provided updates
+            const profileUpdate = {
+               publicKey: this.runtime.getSetting('WALLET_PUBLIC_KEY'),
+               handle: this.runtime.character.settings?.secrets?.aikoUsername,
+               pfp: this.runtime.character.settings?.secrets?.aikoAvatar,
+               isUploading: false,
+            };
+            console.log("aiko: updateStreamerProfile: profileUpdate", { profileUpdate });
+            const response = await fetch(`${SERVER_URL}/api/user-profile/${this.runtime.getSetting('WALLET_PUBLIC_KEY')}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profileUpdate)
+            });
+
+            if (!response.ok) {
+                if (response.status === 409) {
+                  throw new Error('Handle already taken');
+                }
+                throw new Error('Failed to update profile');
+            }
+
+            const data = await response.json();
+
+            console.log(`aiko (${this.runtime.character.name}): Updated streamer profile`, data);
+            return data.status; 
+        } catch (error) {
+            console.error(`aiko (${this.runtime.character.name}): Failed to update streamer profile:`, error);
+            throw error;
+        }
+    }
 
     async generateSpeech(text: string): Promise<string> {
         console.log("aiko: generateSpeech", { text });

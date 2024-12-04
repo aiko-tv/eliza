@@ -11,7 +11,7 @@ export const defaultCharacter: Character = {
             aikoEnvironmentUrl: "modern_bedroom_compressed.glb",
             aikoUsername: "TestUserStream",
             aikoCreatorTitle: "Test Creator Title",
-            aikoAvatar: "https://aiko-tv.b-cdn.net/images/aiko.webp",
+            aikoAvatar: "https://aiko-tv.b-cdn.net/agentImages/aiko.webp",
         },
         voice: {
             model: "en_US-hfc_female-medium",
