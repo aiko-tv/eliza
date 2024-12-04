@@ -495,10 +495,10 @@ export class AikoClient {
         // BunnyCDN upload configuration
         const options = {
             method: 'PUT',
-            host: 'ny.storage.bunnycdn.com', // No region prefix needed
-            path: `/aikotv/${fileName}`,
+            host: 'la.storage.bunnycdn.com', // No region prefix needed
+            path: `/aiko-tv/speech/${fileName}`,
             headers: {
-                'AccessKey': 'fc90fb23-e912-4e28-802571880a29-d444-47fb',
+                'AccessKey': this.runtime.getSetting("BUNNYCDN_ACCESS_KEY"),
                 'Content-Type': 'audio/mpeg',
             },
         };
@@ -507,7 +507,7 @@ export class AikoClient {
         return new Promise((resolve, reject) => {
             const req = https.request(options, (res) => {
                 if (res.statusCode === 201) {
-                    const publicUrl = `https://aikotv.b-cdn.net/${fileName}`;
+                    const publicUrl = `https://aiko-tv.b-cdn.net/speech/${fileName}`;
                     console.log(`aiko (${agentName}): upload successful`, { publicUrl });
                     resolve(publicUrl);
                 } else {
