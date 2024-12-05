@@ -8236,9 +8236,6 @@ async function requestVoiceList(
         voiceList = await loadVoiceList();
     }
 
-    console.log("voiceList");
-    console.log(voiceList);
-
     const languageCode = await normalizeIdentifierToLanguageCode(
         options.language || ""
     );
