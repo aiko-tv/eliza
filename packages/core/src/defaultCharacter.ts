@@ -12,6 +12,7 @@ export const defaultCharacter: Character = {
             aikoUsername: "test123",
             aikoCreatorTitle: "Test Creator Title",
             aikoAvatar: "https://aiko-tv.b-cdn.net/agentImages/aiko.webp",
+            aikoDescription: "Test Description",
         },
         voice: {
             model: "en_US-hfc_female-medium",

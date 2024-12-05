@@ -53,6 +53,7 @@ export interface StreamingStatusUpdate {
         username: string;
         title: string;
         avatar: string;
+        description: string;
     };
     stats?: StreamingStats;
 }
