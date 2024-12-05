@@ -92,7 +92,10 @@ export class AikoClient {
         });
 
         // Initialize the streamer profile
-        this.initializeStreamerProfile();
+        this.updateStreamerProfile();
+
+        // Initialize the agent map
+        this.updateAgentMap();
 
         // Start the task scheduler
         this.taskInterval = setInterval(() => {
@@ -171,15 +174,6 @@ export class AikoClient {
         await this.updateStreamingStatus({
             isStreaming: true,
         });
-    }
-
-    // Run once when the stream starts
-    async initializeStreamerProfile() {
-        try {
-            await this.updateStreamerProfile();
-        } catch (error) {
-            console.error("Error initializing streamer profile:", error);
-        }
     }
 
     async readAndRespondToTopLikers() {
@@ -505,15 +499,27 @@ export class AikoClient {
                isUploading: false,
             };
             console.log("aiko: updateStreamerProfile: profileUpdate", { profileUpdate });
-            const response = await fetch(`${SERVER_URL}/api/user-profile/${this.runtime.getSetting('WALLET_PUBLIC_KEY')}`, {
+            const checkResponse = await fetch(`${SERVER_URL}/api/user-profile/${this.runtime.getSetting('WALLET_PUBLIC_KEY')}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(profileUpdate)
             });
-
+            const method = checkResponse.status === 404 ? 'POST' : 'PUT';
+            const endpoint = method === 'POST'
+                ? `${SERVER_URL}/api/user-profile`
+                : `${SERVER_URL}/api/user-profile/${this.runtime.getSetting('WALLET_PUBLIC_KEY')}`;
+            
+            const response = await fetch(endpoint, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profileUpdate)
+            });
             if (!response.ok) {
+                console.error("aiko: updateStreamerProfile: response", { response });
                 if (response.status === 409) {
                   throw new Error('Handle already taken');
                 }
@@ -526,6 +532,31 @@ export class AikoClient {
             return data.status; 
         } catch (error) {
             console.error(`aiko (${this.runtime.character.name}): Failed to update streamer profile:`, error);
+            throw error;
+        }
+    }
+
+    async updateAgentMap() {
+        try {
+            const response = await fetch(`${SERVER_URL}/api/agentmap/${this.runtime.agentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    walletAddress: this.runtime.getSetting('WALLET_PUBLIC_KEY'),
+                    name: this.runtime.character.settings?.secrets?.aikoUsername,
+                })
+            });
+            
+            if (!response.ok) {
+                console.error("aiko: updateAgentMap: response", { response });
+            }
+
+            const data = await response.json();
+            console.log(`aiko (${this.runtime.character.name}): Updated agent map`, data);
+        } catch (error) {
+            console.error(`aiko (${this.runtime.character.name}): Failed to update agent map:`, error);
             throw error;
         }
     }

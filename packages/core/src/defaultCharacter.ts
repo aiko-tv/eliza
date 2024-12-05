@@ -9,7 +9,7 @@ export const defaultCharacter: Character = {
         secrets: {
             aikoModel: "aiko2.vrm", // change this to the model you want to use
             aikoEnvironmentUrl: "modern_bedroom_compressed.glb",
-            aikoUsername: "TestUserStream",
+            aikoUsername: "test123",
             aikoCreatorTitle: "Test Creator Title",
             aikoAvatar: "https://aiko-tv.b-cdn.net/agentImages/aiko.webp",
         },
