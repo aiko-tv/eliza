@@ -8,11 +8,12 @@ import {
     State,
     UUID
 } from "@ai16z/eliza/src/types.ts";
+import { Readable } from 'stream';
 import { stringToUuid } from "@ai16z/eliza/src/uuid.ts";
 import { fetchRoomMessages, fetchTopLikers, fetchUnreadComments, fetchUnreadGifts, getRandomTopLiker, IComment, markCommentsAsRead, markGiftsAsRead, postRoomMessage } from './db/index.ts';
 import { composeContext, embeddingZeroVector } from "@ai16z/eliza";
 import { generateMessageResponse, generateText } from "@ai16z/eliza/src/index.ts";
-import https from 'https';
+import axios from 'axios';
 import { parseJSONObjectFromText } from "@ai16z/eliza/src/parsing.ts";
 import {
     aikoAnimationTemplate,
@@ -103,6 +104,17 @@ export class AikoClient {
         }, 1000); // Check for new tasks every second
 
     }
+
+//    async testSpeech() {
+//        try {
+//      
+//            const text = "Hello, how are you?";
+//            const speech = await this.generateSpeech(text);
+//            console.log("aiko: testSpeech", { speech });
+//        } catch (error) {
+//            console.error("aiko: testSpeech", { error });
+//        }
+//    }
 
     /**
      * Processes the next available task in the task queue based on priority and timing
@@ -434,13 +446,14 @@ export class AikoClient {
                     username: this.runtime.character.settings?.secrets?.aikoUsername || update.creator?.username,
                     title: this.runtime.character.settings?.secrets?.aikoCreatorTitle || update.creator?.title,
                     avatar: this.runtime.character.settings?.secrets?.aikoAvatar || update.creator?.avatar, // must be image url
+                    description: this.runtime.character.settings?.secrets?.aikoDescription || update.creator?.description,
                 },
 
                 // Default scene configs if not provided
                 walletAddress: this.runtime.getSetting("WALLET_PUBLIC_KEY") || update.walletAddress,
                 sceneConfigs: [
                     {
-                        model: this.runtime.character.settings?.secrets?.aikoModel || update.model,
+                        model: this.runtime.character.settings?.secrets?.aikoModel,
                         environmentURL: this.runtime.character.settings?.secrets?.aikoEnvironmentUrl || update.sceneConfigs[0].environmentURL,
                         
                         models: [
@@ -565,54 +578,42 @@ export class AikoClient {
         console.log("aiko: generateSpeech", { text });
         const agentName = this.runtime.character.name;
         console.log(`aiko (${agentName}): starting speech generation for text:`, { text });
-
-        //     // Get speech service and generate audio
-        const SpeechService = await this.runtime.getService(ServiceType.SPEECH_GENERATION) as any
+    
+        // Get speech service and generate audio
+        const SpeechService = await this.runtime.getService(ServiceType.SPEECH_GENERATION) as any;
         const speechService = SpeechService.getInstance();
         const audioStream = await speechService.generate(this.runtime, text);
-
+    
+        // Convert the audio stream to a buffer
+        const audioBuffer = await new Promise<Buffer>((resolve, reject) => {
+            const chunks: Uint8Array[] = [];
+            audioStream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
+            audioStream.on('end', () => resolve(Buffer.concat(chunks)));
+            audioStream.on('error', reject);
+        });
+    
         // Generate filename
         const timestamp = Date.now();
         const fileName = `${this.runtime.agentId}-${timestamp}.mp3`;
-
-        // BunnyCDN upload configuration
-        const options = {
-            method: 'PUT',
-            host: 'la.storage.bunnycdn.com', // No region prefix needed
-            path: `/aiko-tv/speech/${fileName}`,
-            headers: {
-                'AccessKey': this.runtime.getSetting("BUNNYCDN_ACCESS_KEY"),
-                'Content-Type': 'audio/mpeg',
-            },
-        };
-
-        // Upload using https
-        return new Promise((resolve, reject) => {
-            const req = https.request(options, (res) => {
-                if (res.statusCode === 201) {
-                    const publicUrl = `https://aiko-tv.b-cdn.net/speech/${fileName}`;
-                    console.log(`aiko (${agentName}): upload successful`, { publicUrl });
-                    resolve(publicUrl);
-                } else {
-                    let data = '';
-                    res.on('data', chunk => data += chunk);
-                    res.on('end', () => {
-                        console.error(`aiko (${agentName}): upload failed`, {
-                            statusCode: res.statusCode,
-                            response: data
-                        });
-                        reject(new Error(`Upload failed: ${data}`));
-                    });
-                }
+    
+        try {
+            const response = await axios.post(`${SERVER_URL}/api/upload/audio`, audioBuffer, {
+                headers: {
+                    'Content-Type': 'audio/mpeg',
+                    'Content-Disposition': `attachment; filename="${fileName}"`,
+                    'isAudioStream': 'true'
+                },
+                maxBodyLength: Infinity,  // Allow large files
+                maxContentLength: Infinity,
             });
-
-            req.on('error', (error) => {
-                console.error(`aiko (${agentName}): upload error`, { error });
-                reject(error);
-            });
-
-            audioStream.pipe(req);
-        });
+    
+            const publicUrl = response.data.url;
+            console.log(`aiko (${agentName}): upload successful`, { publicUrl });
+            return publicUrl;
+        } catch (error) {
+            console.error(`aiko (${agentName}): error sending audio to server`, error);
+            throw new Error("Failed to upload audio");
+        }
     }
 
     async processGift(gift: any) {
