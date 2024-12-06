@@ -458,6 +458,8 @@ export class AikoClient {
                         
                         models: [
                             {
+                                name: this.runtime.character.name,
+                                description: this.runtime.character.settings?.secrets?.aikoDescription || update.sceneConfigs[0].models[0].description,
                                 agentId: this.runtime.agentId,
                                 // add other default values here
                             }
