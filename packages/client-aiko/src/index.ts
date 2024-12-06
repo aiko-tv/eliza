@@ -439,6 +439,9 @@ export class AikoClient {
                 // Always include agentId
                 agentId: this.runtime.agentId,
 
+                // wallet address used to change vrm model
+                dPublicKey: this.runtime.character.settings?.secrets?.developerPublicKey,
+
                 // Stream Id
 
                 // Default creator info if not provided
