@@ -8,7 +8,6 @@ import {
     State,
     UUID
 } from "@ai16z/eliza/src/types.ts";
-import { Readable } from 'stream';
 import { stringToUuid } from "@ai16z/eliza/src/uuid.ts";
 import { fetchRoomMessages, fetchTopLikers, fetchUnreadComments, fetchUnreadGifts, getRandomTopLiker, IComment, markCommentsAsRead, markGiftsAsRead, postRoomMessage } from './db/index.ts';
 import { composeContext, embeddingZeroVector } from "@ai16z/eliza";
@@ -417,7 +416,6 @@ export class AikoClient {
     }
 
     async updateStreamingStatus(update: Partial<StreamingStatusUpdate>) {
-        const streamSettings = this.runtime.character.settings?.secrets?.aikoSettings
 
         try {
             // Merge default values with provided updates
@@ -456,12 +454,10 @@ export class AikoClient {
                 walletAddress: this.runtime.getSetting("WALLET_PUBLIC_KEY") || update.walletAddress,
                 sceneConfigs: [
                     {
-                        model: this.runtime.character.settings?.secrets?.aikoModel,
                         environmentURL: this.runtime.character.settings?.secrets?.aikoEnvironmentUrl || update.sceneConfigs[0].environmentURL,
                         
                         models: [
                             {
-                                model: this.runtime.character.settings?.secrets?.aikoModel  || update.sceneConfigs[0].model,
                                 agentId: this.runtime.agentId,
                                 // add other default values here
                             }

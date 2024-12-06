@@ -7,7 +7,6 @@ export const defaultCharacter: Character = {
     modelProvider: ModelProviderName.OPENAI,
     settings: {
         secrets: {
-            aikoModel: "aiko2.vrm", // change this to the name of your .vrm file
             aikoEnvironmentUrl: "modern_bedroom_compressed.glb", // don't change
             developerPublicKey: "AxtEEA7LUcRBNMTq5pYeMkeAE11UwJoP5YFsGCr8N2kD", // set a trusted wallet for admin
             aikoUsername: "test123", // change the streamer username
