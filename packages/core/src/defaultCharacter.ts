@@ -7,13 +7,13 @@ export const defaultCharacter: Character = {
     modelProvider: ModelProviderName.OPENAI,
     settings: {
         secrets: {
-            aikoModel: "aiko2.vrm", // change this to the model you want to use
-            aikoEnvironmentUrl: "modern_bedroom_compressed.glb",
-            developerPublicKey: "AxtEEA7LUcRBNMTq5pYeMkeAE11UwJoP5YFsGCr8N2kD",
-            aikoUsername: "test123",
-            aikoCreatorTitle: "Test Creator Title",
-            aikoAvatar: "https://aiko-tv.b-cdn.net/agentImages/aiko.webp",
-            aikoDescription: "Test Description",
+            aikoModel: "aiko2.vrm", // change this to the name of your .vrm file
+            aikoEnvironmentUrl: "modern_bedroom_compressed.glb", // don't change
+            developerPublicKey: "AxtEEA7LUcRBNMTq5pYeMkeAE11UwJoP5YFsGCr8N2kD", // set a trusted wallet for admin
+            aikoUsername: "test123", // change the streamer username
+            aikoCreatorTitle: "Test Creator Title", // change the title of your stream
+            aikoAvatar: "https://aiko-tv.b-cdn.net/agentImages/aiko.webp", // pfp image link **must be link
+            aikoDescription: "Test Description", // change the description/bio of your streamer
         },
         voice: {
             model: "en_US-hfc_female-medium",
